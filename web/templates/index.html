@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- script
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/konva/5.0.0/konva.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.33.1/plotly.min.js"></script>
+    -->
+    <script type="text/javascript" src="{{url_for('static', filename='materialize.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='konva.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='plotly.min.js')}}"></script>
+
+    <!-- css-->
+    <link rel="stylesheet" href="{{url_for('static', filename='materialize.min.css')}}">
+
+    <meta charset="UTF-8">
+    <title>demo</title>
+</head>
+
+<body class="container">
+
+<nav>
+    <div class="nav-wrapper">
+        <a href="#!" class="brand-logo center">Rings Detecor Demo</a>
+        <ul class="left hide-on-med-and-down">
+            <li class="active"><a href="/">HOME</a></li>
+        </ul>
+    </div>
+</nav>
+
+<h4>Example</h4>
+<p>
+    Here is the web interface for ring widths detections
+</p>
+
+<div class="row">
+    <form action="javascript:void(0);" name="form">
+        <!--form action="/upload" name="form" method="post"-->
+        <div class="col s4" name="controller">
+            <div class="row">
+                <label style="color: black;font-size: larger">File Input</label>
+                <div class="file-field input-field">
+                    <div class="waves-effect waves-light btn-small">
+                        <span>Browse</span>
+                        <input type="file" id="file" name="file" accept="image/*" required onchange="loadImage()">
+                    </div>
+
+                    <div class="file-path-wrapper">
+                        <input class="file-path validate" disabled type="text"
+                               placeholder="Upload file">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="row">
+                    <div class=" input-field switch col s12">
+                        <label style="color: black;font-size: larger">
+                            Is strip image? &nbsp&nbsp&nbsp&nbspYes <input type="checkbox" name="is_strip"
+                                                                           onclick="selectFromImage(this)">
+                            <span class="lever"></span>No
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="row">
+                    <div class=" input-field switch col s12">
+                        <label style="color: black;font-size: larger">
+                            Manfully Input Pith Location
+                            <input type="checkbox" name="pith_from_image" onclick="selectFromImage(this)">
+                            <span class="lever"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-field col s4">
+                    <label for="pithx"></label><input type="number" id="pithx" name="pithx" placeholder="x"
+                                                      onchange="updatePoint(this)">
+                </div>
+                <div class=" input-field col s4">
+                    <label for="pithy"></label><input type="number" id="pithy" name="pithy" placeholder="y"
+                                                      onchange="updatePoint(this)">
+                </div>
+
+                <div class=" input-field col s4">
+                    <a class="waves-effect waves-light btn-small input-field" name="pith_reset"
+                       onclick="resetSelect(this)">reset</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="row">
+                    <div class=" input-field switch col s12">
+                        <label style="color: black;font-size: larger">
+                            Manfully Input Chainsaw Mark Direction
+                            <input type="checkbox" name="angle_from_image" onclick="selectFromImage(this)">
+                            <span class="lever"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class=" input-field col s4">
+                    <label for="mark_angle"></label><input type="number" id="mark_angle" name="mark_angle"
+                                                           placeholder="degree"
+                                                           onchange="updatePoint(this)">
+                </div>
+                <div class=" input-field col s4">
+                    <a class="waves-effect waves-light btn-small input-field" name="angle_reset"
+                       onclick="resetSelect(this)">reset</a>
+                    <!--input type="submit" class="waves-effect waves-light btn-small input-field" name="button"-->
+                </div>
+            </div>
+            <div class="row">
+                <a type="button" class="waves-effect waves-light btn-small input-field"
+                   onclick="send('{{url_for('upload_file')}}','form')" name="button" style="width: 100%;color: white">submit</a>
+            </div>
+        </div>
+    </form>
+    <div class="col s1" name="space"></div>
+    <div>
+        <div id="canvas1" class="col s7" name="preview"></div>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="progress">
+        <div class="indeterminate" name="progress" style="visibility: hidden"></div>
+    </div>
+</div>
+<div class="row">
+    <div class="col s3">
+        <!--div style="height: 50px"></div-->
+        <form action="{{ url_for('fine_tune')}}" method="post" enctype="multipart/form-data" name="fine_tune"
+              onchange="fineTune('{{url_for('fine_tune')}}','fine_tune')">
+            <div class="row"><label style="color: black;font-size: larger">Fine Tune</label></div>
+            <div class="row">
+                <label style="color: black;font-size: medium">Gaussian Smooth</label>
+                <input type="range" id="gaussian_smooth" name="gaussian_smooth" min="0" max="100">
+            </div>
+            <div class="row">
+                <label style="color: black;font-size: medium">Quartile Smooth</label>
+                <input type="range" id="quantile" name="quantile" min="0" max="100" value="20">
+            </div>
+            <div class="row">
+                <label style="color: black;font-size: medium">Strip Width (for log image only)</label>
+                <input type="range" id="strip_width" name="strip_width" min="0" max="100">
+            </div>
+        </form>
+    </div>
+    <div class="col s9">
+        <div id="canvas2" name="canvas2"></div>
+    </div>
+</div>
+<footer class="page-footer">
+</footer>
+</body>
+
+<script type="text/javascript" src="{{url_for('static', filename='load.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='script.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='request.js')}}"></script>
+</html>
